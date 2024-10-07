@@ -5,6 +5,28 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "sender_sent_at",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sender_session_phone_number",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "thread_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updated_at",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reply",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "thread_id",
           "order": "ASCENDING"
         },

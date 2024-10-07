@@ -9,8 +9,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "crawler": "ts-node src/cmd/crawler.ts",
-    "conversation": "ts-node src/cmd/conversation.ts",
-    "session": "ts-node src/cmd/session.ts"
+    "session": "ts-node src/cmd/session.ts",
+    "conversation": "ts-node src/cmd/conversation.ts"
   },
   "engines": {
     "node": "18"
@@ -25,7 +25,7 @@
     "firebase-admin": "^12.1.0",
     "firebase-functions": "^5.0.0",
     "helmet": "^8.0.0",
-    "lodash.uniq": "^4.5.0",
+    "lodash.random": "^3.2.0",
     "node-fetch": "^2.7.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
@@ -34,7 +34,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
-    "@types/lodash.uniq": "^4.5.9",
+    "@types/lodash.random": "^3.2.9",
     "@types/node-fetch": "^2.6.11",
     "firebase-functions-test": "^3.1.0",
     "ts-node": "^10.9.2",

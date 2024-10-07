@@ -1,7 +1,7 @@
-import { ulid } from "ulid";
 import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import * as yup from "yup";
+import { ISession } from "./session";
 
 export const COLLECTION = "reply";
 
@@ -12,6 +12,10 @@ export interface IReply {
   content: string;
   author_username: string;
   updated_at: number;
+
+  sender_session_phone_number: string;
+  sender_assigned_at?: number;
+  sender_sent_at: number;
 }
 
 export function validate(reply: IReply): boolean {
@@ -35,18 +39,26 @@ export function validate(reply: IReply): boolean {
 export async function save(docs: IReply[]) {
   if (docs.length === 0) return docs;
 
-  const batch = admin.firestore().batch();
+  return admin.firestore().runTransaction(async (tx) => {
+    const snapshots = await tx.getAll(
+      ...docs.map((d) => admin.firestore().collection(COLLECTION).doc(d.id))
+    );
+    const exists: { [name: string]: boolean } = snapshots.reduce(
+      (m, s) => ({ ...m, [s.id]: s.exists }),
+      {}
+    );
 
-  for (let i = 0; i < docs.length; i++) {
-    if (!docs[i].id) docs[i].id = ulid();
+    const returning: IReply[] = [];
+    for (let doc of docs) {
+      if (exists[doc.id]) continue;
 
-    const ref = admin.firestore().collection(COLLECTION).doc(docs[i].id);
-    batch.set(ref, docs[i], { merge: true });
-  }
+      const ref = admin.firestore().collection(COLLECTION).doc(doc.id);
+      tx.set(ref, doc);
+      returning.push(doc);
+    }
 
-  await batch.commit();
-
-  return docs;
+    return returning;
+  });
 }
 
 export async function get(id: string): Promise<IReply | null> {
@@ -54,14 +66,53 @@ export async function get(id: string): Promise<IReply | null> {
   return snapshot.data() as IReply | null;
 }
 
-export async function list(threadId: string): Promise<{ docs: IReply[] }> {
-  const docs = await admin
-    .firestore()
-    .collection(COLLECTION)
-    .where("thread_id", "==", threadId)
-    .orderBy("updated_at", "asc")
-    .get()
-    .then((s) => s.docs.map((d) => d.data() as IReply));
-  if (docs.length === 0) return { docs: [] };
-  return { docs };
+export function assign(session: ISession, limit = 100) {
+  return admin.firestore().runTransaction(async (tx) => {
+    const snapshots = await tx.get(
+      admin
+        .firestore()
+        .collection(COLLECTION)
+        .where("sender_session_phone_number", "==", "")
+        .where("sender_sent_at", "==", 0)
+        .orderBy("thread_id", "asc")
+        .orderBy("updated_at", "asc")
+        .limit(limit)
+    );
+    if (snapshots.empty) return [];
+
+    const returning: IReply[] = [];
+    for (let doc of snapshots.docs) {
+      returning.push(doc.data() as IReply);
+      tx.update(doc.ref, {
+        sender_session_phone_number: session.phone_number,
+        sender_assigned_at: Date.now(),
+      });
+    }
+
+    return returning;
+  });
+}
+
+export function send(session: ISession, limit = 10) {
+  return admin.firestore().runTransaction(async (tx) => {
+    const snapshots = await tx.get(
+      admin
+        .firestore()
+        .collection(COLLECTION)
+        .where("sender_session_phone_number", "==", session.phone_number)
+        .where("sender_sent_at", "==", 0)
+        .orderBy("thread_id", "asc")
+        .orderBy("updated_at", "asc")
+        .limit(limit)
+    );
+    if (snapshots.empty) return [];
+
+    const returning: IReply[] = [];
+    for (let doc of snapshots.docs) {
+      tx.update(doc.ref, { sender_sent_at: Date.now() });
+      returning.push(doc.data() as IReply);
+    }
+
+    return returning;
+  });
 }

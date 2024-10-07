@@ -30,19 +30,29 @@ async function replices() {
   const domain = process.argv[2];
   if (!domain) throw new Error("domain is required");
 
-  const id = process.argv[3];
-  if (!id) throw new Error("thread id is required");
-
   const ds = datasource[domain];
   if (!ds) throw new Error("domain not found");
 
-  const thread = await database.thread.get(id);
-  if (!thread) throw new Error(`thread [${id}] not found`);
+  const threads: database.thread.IThread[] = [];
 
-  const pages = await ds.downloader.replices(thread, 1);
-  for (let page of pages) {
-    const replices = ds.parser.replices(cheerio.load(page), thread);
-    const docs = await database.reply.save(replices);
-    console.log(`REPLICES.CRAWLER.DOWNLOADER ${domain} > ${docs.length}`);
+  const id = process.argv[3];
+  if (id) {
+    const thread = await database.thread.get(id);
+    if (!thread) throw new Error(`thread [${id}] not found`);
+    threads.push(thread);
+  } else {
+    const list = await database.thread.list(100, 0);
+    threads.push(...list.docs);
+  }
+
+  for (let thread of threads) {
+    const pages = await ds.downloader.replices(thread, 1);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    for (let page of pages) {
+      const replices = ds.parser.replices(cheerio.load(page), thread);
+      const docs = await database.reply.save(replices);
+      console.log(`REPLICES.CRAWLER.DOWNLOADER ${domain} > ${docs.length}`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
 }

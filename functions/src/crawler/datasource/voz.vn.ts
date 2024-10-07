@@ -11,7 +11,9 @@ export const parser = {
   threads($: cheerio.CheerioAPI): database.thread.IThread[] {
     const threads: database.thread.IThread[] = [];
 
-    const items = Array.from($(".structItemContainer-group > .structItem"));
+    const items = Array.from(
+      $(".structItemContainer-group.js-threadList > .structItem")
+    );
     for (let item of items) {
       const select = cheerio.load(item);
 
@@ -60,6 +62,8 @@ export const parser = {
           item.attributes.find((attr) => attr.name === "data-author")?.value ||
           "",
         updated_at: Date.now(),
+        sender_session_phone_number: "",
+        sender_sent_at: 0,
       };
 
       const replyId =
@@ -72,6 +76,7 @@ export const parser = {
         reply.url = url.toString();
         reply.id = text2hex(reply.url);
       }
+
       if (database.reply.validate(reply)) replices.push(reply);
     }
 

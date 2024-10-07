@@ -1,4 +1,3 @@
-import { ulid } from "ulid";
 import admin from "firebase-admin";
 import * as yup from "yup";
 
@@ -41,7 +40,6 @@ export async function save(docs: IThread[]) {
   const batch = admin.firestore().batch();
 
   for (let i = 0; i < docs.length; i++) {
-    if (!docs[i].id) docs[i].id = ulid();
     docs[i].crawler_page_cur = admin.firestore.FieldValue.increment(1);
 
     const ref = admin.firestore().collection(COLLECTION).doc(docs[i].id);

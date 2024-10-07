@@ -18,6 +18,7 @@ export interface ISession {
   updated_at: number;
 
   client_hosts: { [key: string]: number };
+  targets: string[];
 }
 
 export function validate(session: ISession): boolean {
@@ -65,8 +66,11 @@ export async function connect(
     session_key: client.session.save() as any,
     updated_at: Date.now(),
     client_hosts: { [ip]: Date.now() },
+    targets: [],
   };
   if (!validate(session)) return null;
+
+  await client.disconnect();
   return session;
 }
 
@@ -116,5 +120,25 @@ export async function save(docs: ISession[]) {
     }
 
     return docs;
+  });
+}
+
+export async function get(id: string): Promise<ISession | null> {
+  const snapshot = await admin.firestore().collection(COLLECTION).doc(id).get();
+  return snapshot.data() as ISession | null;
+}
+
+export async function join(session: ISession, target: string) {
+  return admin.firestore().runTransaction(async (tx) => {
+    const snapshot = await admin
+      .firestore()
+      .collection(COLLECTION)
+      .doc(session.phone_number)
+      .get();
+
+    tx.update(snapshot.ref, {
+      targets: admin.firestore.FieldValue.arrayUnion(target),
+    });
+    return snapshot.data() as ISession;
   });
 }
