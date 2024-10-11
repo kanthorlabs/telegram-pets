@@ -7,5 +7,6 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import "../fireabse/config";
+import "./fireabse/config";
 export * from "./api/functions";
+export * from "./crawler/functions";
