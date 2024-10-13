@@ -71,10 +71,13 @@ export const parser = {
       while (reply.content.includes("  ")) {
         reply.content = reply.content.replace(/  /g, " ").trim();
       }
-      reply.content = reply.content.slice(
-        reply.content.length - 256,
-        reply.content.length
-      );
+      const expand = reply.content.split("Click to expand");
+      if (expand.length > 1) {
+        reply.content = expand[1].slice(
+          reply.content.length - 256,
+          reply.content.length
+        );
+      }
 
       const replyId =
         item.attributes.find((attr) => attr.name === "data-content")?.value ||
