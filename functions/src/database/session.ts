@@ -19,6 +19,7 @@ export interface ISession {
 
   client_hosts: { [key: string]: number };
   targets: string[];
+  lock_expired_at: number;
 }
 
 export function validate(session: ISession): boolean {
@@ -67,6 +68,7 @@ export async function connect(
     updated_at: Date.now(),
     client_hosts: { [ip]: Date.now() },
     targets: [],
+    lock_expired_at: Date.now(),
   };
   if (!validate(session)) return null;
 

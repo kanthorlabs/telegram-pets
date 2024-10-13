@@ -6,7 +6,11 @@ import random from "lodash.random";
 import * as database from "../database";
 import * as telegram from "../libs/telegram";
 
-export async function send(session: database.session.ISession, interval = 30) {
+export async function send(
+  session: database.session.ISession,
+  interval = 30,
+  max = 10
+) {
   const log = `[${session.phone_number}] PETS.TELEGRAM.SEND`;
   const messages: string[] = [];
 
@@ -24,7 +28,8 @@ export async function send(session: database.session.ISession, interval = 30) {
     });
   if (!client) return messages;
 
-  const replies = await database.reply.assign(session);
+  const limit = random(2, max, false);
+  const replies = await database.reply.assign(session, limit);
   const targets = session.targets.map((target) => JSON.parse(target));
 
   let destination = 0;

@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import fetch from "node-fetch";
 
 export const text2hex = (text: string) =>
   createHash("sha256").update(text).digest("hex");
@@ -10,3 +11,7 @@ export const hr2int = (hr: string) => {
   if (matches[2] === "m") return parseInt(matches[1]) * 1000 * 1000;
   return parseInt(matches[1]);
 };
+
+export async function ip() {
+  return fetch("https://api.ipify.org/").then((r) => r.text());
+}
