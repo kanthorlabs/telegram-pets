@@ -10,3 +10,4 @@
 import "./fireabse/config";
 export * from "./api/functions";
 export * from "./crawler/functions";
+export * from "./pets/functions";

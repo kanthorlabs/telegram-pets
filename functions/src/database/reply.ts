@@ -66,7 +66,7 @@ export async function get(id: string): Promise<IReply | null> {
   return snapshot.data() as IReply | null;
 }
 
-export function assign(session: ISession, limit = 100) {
+export function assign(session: ISession, limit = 10) {
   return admin.firestore().runTransaction(async (tx) => {
     const snapshots = await tx.get(
       admin
@@ -93,7 +93,7 @@ export function assign(session: ISession, limit = 100) {
   });
 }
 
-export function send(session: ISession, limit = 10) {
+export function pick(session: ISession, limit = 10) {
   return admin.firestore().runTransaction(async (tx) => {
     const snapshots = await tx.get(
       admin
