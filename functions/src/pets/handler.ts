@@ -1,16 +1,11 @@
 import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import { ulid } from "ulid";
-import * as utils from "../utils";
 import * as database from "../database";
+import * as utils from "../utils";
 import * as telegram from "./telegram";
 import { LOCK_DURATION } from "./constants";
 
 export async function simple(name: string, phone?: string) {
-  const ip = await utils.ip();
-  const id = ulid();
-  await admin.firestore().collection("ip").doc(id).set({ id, ip, name });
-
   return admin.firestore().runTransaction(async (tx) => {
     const session = await get(tx, phone);
     if (!session) {
@@ -55,9 +50,11 @@ async function lock(
   session: database.session.ISession,
   duration = LOCK_DURATION
 ) {
+  const ip = await utils.ip();
+
   const ref = admin
     .firestore()
     .collection(database.session.COLLECTION)
     .doc(session.phone_number);
-  tx.update(ref, { lock_expired_at: Date.now() + duration });
+  tx.update(ref, { lock_expired_at: Date.now() + duration, lock_by_ip: ip });
 }

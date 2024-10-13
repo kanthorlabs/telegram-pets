@@ -57,7 +57,10 @@ export const parser = {
         thread_id: thread.id,
         id: "",
         url: "",
-        content: select(".message-body .bbWrapper").text(),
+        content: select(".message-body .bbWrapper")
+          .text()
+          .replace(/\n/g, " ")
+          .replace(/\t/g, " "),
         author_username:
           item.attributes.find((attr) => attr.name === "data-author")?.value ||
           "",
@@ -65,6 +68,13 @@ export const parser = {
         sender_session_phone_number: "",
         sender_sent_at: 0,
       };
+      while (reply.content.includes("  ")) {
+        reply.content = reply.content.replace(/  /g, " ").trim();
+      }
+      reply.content = reply.content.slice(
+        reply.content.length - 256,
+        reply.content.length
+      );
 
       const replyId =
         item.attributes.find((attr) => attr.name === "data-content")?.value ||

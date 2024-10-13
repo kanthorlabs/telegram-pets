@@ -20,6 +20,7 @@ export interface ISession {
   client_hosts: { [key: string]: number };
   targets: string[];
   lock_expired_at: number;
+  lock_by_ip?: string;
 }
 
 export function validate(session: ISession): boolean {

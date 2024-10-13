@@ -6,6 +6,7 @@ export const petno_1 = onSchedule(
   {
     region: settings.FIREBASE_REGION,
     schedule: "*/15 0-1 * * *",
+    timeoutSeconds: 540,
   },
   async () => {
     await simple("no_1");
