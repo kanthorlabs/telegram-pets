@@ -1,3 +1,4 @@
+import admin from "firebase-admin";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -24,7 +25,23 @@ export function use() {
   });
 
   app.get("/pets/simple", async (req, res) => {
-    res.json({ messages: await pethandler.simple("api") });
+    const result: any = {};
+    result.docs = await pethandler.simple("api");
+    if (result.docs.length === 0) {
+      result.incomming = await admin
+        .firestore()
+        .collection(database.session.COLLECTION)
+        .orderBy("lock_expired_at", "asc")
+        .limit(1)
+        .get()
+        .then(async (s) => ({ ...s.docs[0].data() }))
+        .then((x) =>
+          Number.isSafeInteger(x.lock_expired_at)
+            ? new Date(x.lock_expired_at).toISOString()
+            : null
+        );
+    }
+    res.json(result);
   });
 
   app.get("/crawler/thread", async (req, res): Promise<any> => {

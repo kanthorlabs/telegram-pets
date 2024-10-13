@@ -20,7 +20,9 @@ export async function simple(name: string, phone?: string) {
     for (const message of messages) {
       console.log(message.replace("/", " -> "));
     }
-    console.log(`PETS.HANDLER.SIMPLE ${messages.length} messages`);
+    console.log(`PETS.HANDLER.SIMPLE ${messages.length} messages`, {
+      name,
+    });
     return messages;
   });
 }
