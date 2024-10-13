@@ -34,7 +34,7 @@ export function use() {
         .orderBy("lock_expired_at", "asc")
         .limit(1)
         .get()
-        .then(async (s) => ({ ...s.docs[0].data() }))
+        .then(async (s) => (s.docs.length > 0 ? s.docs[0].data() : {}))
         .then((x) =>
           Number.isSafeInteger(x.lock_expired_at)
             ? new Date(x.lock_expired_at).toISOString()
